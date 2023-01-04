@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="all.css">
+    <title>Document</title>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <table class="table align-middle">
+                <thead>
+                  <tr>
+                    <th width="20%">產品名稱</th>
+                    <th width="15% ">原價</th>
+                    <th width="15%">特價</th>
+                    <th width="20%">保存方式</th>
+                    <th width="25%">產品細節</th>
+                  </tr>
+                </thead>
+                <tbody v-for="(product, keys) in products" :key="product.title">
+                  <tr class="align-middle">
+                    <td width="20%">{{product.title}}</td>
+                    <td width="20%">{{product.origin_price}}</td>
+                    <td width="20%">{{product.price}}</td>
+                    <td width="20%" v-if="product.refrigeration == true">冷藏</td>
+                    <td width="20%" v-else>常溫</td>
+                    <td width="20%"><button type="button" @click="detailed = {...product}">查看細節</button></td>
+                  </tr>
+                </tbody>
+              </table>
+              <div>
+                <h3>目前有{{products.length}}項產品</h3>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="row">
+                <div><button type="button" @click="detailed = {}">清除查看品項</button></div>
+                 <div class="mt-2" v-if="Object.keys(detailed) == 0">
+                   <p>點選查看細節看看</p>
+                 </div>
+                <div class="card col-6 mt-2" v-else>
+                  <img v-bind:src="detailed.imageUrl" class="card-img-top" alt="...">
+                  <div class="card-body">
+                    <h5 class="card-title">產品名稱: {{detailed.name}}</h5>
+                    <p class="card-text">商品描述: {{detailed.description}}</p>
+                    <p class="card-text">商品內容: {{detailed.content}}</p>
+                    <div class="d-flex justify-content-between">
+                      <p>原價 <span class="text-decoration">{{detailed.origin_price}} 元</span> </p>
+                      <p>特價 {{detailed.price}} 元</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+           
+          </div>
+        </div>
+      </div>
+      
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-/bQdsTh/da6pkI1MST/rWKFNjaCP5gBSY4sEBT38Q/9RBh9AH40zEOg7Hlq2THRZ" crossorigin="anonymous"></script>
+      <script src="https://unpkg.com/vue@next"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+    
+      <script>
+      
+        // const products=[
+        // {
+        //     name: "草莓布丁",
+        //     origin_price: 500,
+        //     price: 50,
+        //     refrigeration: true,
+        //     description: "採用化學布丁粉,加入果糖,熬製而成的手工布丁,加上濃縮草莓果醬",
+        //     content: "6顆布丁",
+        //     id: 1,
+        //     imageUrl:"https://media.istockphoto.com/id/1167282631/zh/%E5%90%91%E9%87%8F/%E5%8F%AF%E6%84%9B%E7%9A%84%E5%B8%83%E4%B8%81%E8%88%87%E8%8D%89%E8%8E%93%E9%9E%AD%E5%A5%B6%E6%B2%B9%E7%94%9C%E9%BB%9E%E5%8D%A1%E9%80%9A%E6%89%8B%E7%B9%AA%E8%A3%BD%E9%A2%A8%E6%A0%BC.jpg?s=612x612&w=0&k=20&c=eRJrr76roisMFugeMUjDvdU5k8dkR9T4F45hdkxVx5U=",
+        // },
+        // {
+        //     name: "焦糖布丁",
+        //     origin_price: 300,
+        //     price: 30,
+        //     refrigeration: true,
+        //     description: "採用化學布丁粉,熬製而成的手工布丁,淋上濃縮焦糖",
+        //     content: "6顆布丁",
+        //     id: 2, imageUrl:"https://cdn.pixabay.com/photo/2020/05/15/15/06/pudding-5173880__340.jpg",
+        // },
+        // {
+        //     name: "布丁狗",
+        //     origin_price: 50000,
+        //     price: 500,
+        //     refrigeration: false,
+        //     description: "爸爸為高雄布丁狗,媽媽為台北布丁狗,南北混血,請勿冷藏",
+        //     content: "布丁狗一隻",
+        //     id: 3,
+        //     imageUrl:
+        //     "data:image/jpeg;base64,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"
+        // }
+        // ];
+        // const  detailed = {};
+        const url = 'https://vue3-course-api.hexschool.io/';
+        const path = 'ssozr';
+        
+        
+        const app = {
+        data() {
+            return {
+            products:[],
+            detailed:{}
+            };
+        },
+        
+        methods:{
+          checkLogin(){
+            axios.post(`${url}v2/api/user/check`)
+            .then(()=>{
+              this.getProducts()
+            })
+            .catch((err)=>{ 
+              alert("請登入")
+              window.location = 'iogin.html';
+            })
+          },
+          getProducts(){
+            axios.get(`${url}v2/api/${path}/admin/products`)
+            .then((res)=>{
+              console.log(res)
+              this.products = res.data.products;
+            })
+            .catch((error)=>{
+              console.dir(error)
+            })
+          },
+          addProduct(){
+            const data ={}
+          }
+        },
+        mounted(){
+          const token  =  document.cookie.replace(/(?:(?:^|.*;\s*)ssozrToken\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+          axios.defaults.headers.common.Authorization = token;
+
+          this.checkLogin()
+        }
+        };
+
+        Vue.createApp(app).mount("#app");
+       
+        
+        
+
+      </script>
+      
+</body>
+</html>
